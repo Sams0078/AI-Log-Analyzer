@@ -1,6 +1,12 @@
 from fastapi import FastAPI
 
+from backend.api.logs import router as logs_router
+
+
 app = FastAPI(title="AI Log Analyzer")
+
+
+app.include_router(logs_router)
 
 
 @app.get("/")
