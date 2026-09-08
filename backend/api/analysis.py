@@ -1,8 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from backend.database.database import SessionLocal
 from backend.database.models import Log
 from backend.services.analysis_service import analyze_logs
+from backend.ai.root_cause import (
+    analyze_incident_with_ai,
+    retrieve_similar_logs,
+)
 
 
 router = APIRouter(
@@ -43,3 +47,27 @@ def analyze_database_logs():
 
     finally:
         db.close()
+
+
+@router.post("/ai")
+def ai_analyze_incident(incident: dict):
+    try:
+        retrieved = retrieve_similar_logs(
+            incident,
+            top_k=5,
+        )
+
+        return {
+            "incident_id": incident.get("incident_id"),
+            "similar_logs": retrieved,
+            "ai_analysis": analyze_incident_with_ai(
+                incident,
+                retrieved,
+            ),
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )
