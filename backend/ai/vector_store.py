@@ -3,11 +3,23 @@ from pathlib import Path
 import faiss
 import numpy as np
 
-
 INDEX_PATH = Path("vector_db/logs.index")
 
 
+def _get_faiss():
+    try:
+        import faiss
+        return faiss
+    except Exception as e:
+        raise RuntimeError(
+            "FAISS is unavailable on this system. "
+            f"Original error: {e}"
+        ) from e
+
+
 def create_index(embeddings):
+    faiss = _get_faiss()
+
     embeddings = np.asarray(
         embeddings,
         dtype="float32",
@@ -46,6 +58,8 @@ def search_index(index, query_embedding, top_k=5):
 
 
 def load_index():
+    faiss = _get_faiss()
+
     if not INDEX_PATH.exists():
         raise FileNotFoundError(
             f"FAISS index not found: {INDEX_PATH}"

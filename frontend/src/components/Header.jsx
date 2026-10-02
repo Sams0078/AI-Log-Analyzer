@@ -1,12 +1,14 @@
-import {
-  Search,
-  Menu,
-  Zap,
-} from "lucide-react";
+import { ArrowUpRight, Menu, Search, Zap } from "lucide-react";
 
-import { MAIN_NAV } from "../constants/navigation";
+const MAIN_NAV = [
+  ["Overview", "system"],
+  ["Logs", "logs"],
+  ["Anomalies", "anomalies"],
+  ["Incidents", "incidents"],
+  ["AI", "ai-analysis"],
+];
 
-function Navbar({
+function Header({
   onMenu,
   onCommand,
   onLogin,
@@ -17,10 +19,11 @@ function Navbar({
   return (
     <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#050505]/75 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-6 lg:px-10">
-
         {/* BRAND */}
         <button
-          onClick={() => onNavigate("system")}
+          onClick={() =>
+            onNavigate("system")
+          }
           className="flex items-center gap-3"
         >
           <div className="flex h-7 w-7 items-center justify-center rounded-full border border-cyan-300/30">
@@ -46,7 +49,9 @@ function Navbar({
               <button
                 key={label}
                 onClick={() =>
-                  onNavigate(target)
+                  onNavigate(
+                    target
+                  )
                 }
                 className="text-[9px] uppercase tracking-[0.18em] text-white/30 transition hover:text-white"
               >
@@ -58,7 +63,6 @@ function Navbar({
 
         {/* RIGHT */}
         <div className="flex items-center gap-2">
-
           {/* SEARCH */}
           <button
             onClick={onCommand}
@@ -103,4 +107,4 @@ function Navbar({
   );
 }
 
-export default Navbar;
+export default Header;
