@@ -71,23 +71,19 @@ def analyze_logs(logs):
     )
 
     # ---------------------------------
-    # Apply threshold
+    # Apply ML threshold
     # ---------------------------------
 
-    anomaly_predictions = (
-        predict_with_threshold(
-            anomaly_scores,
-            threshold,
-        )
+    anomaly_predictions = predict_with_threshold(
+        anomaly_scores,
+        threshold,
     )
 
     # ---------------------------------
     # Load clustering model
     # ---------------------------------
 
-    clustering_model, scaler = (
-        load_clustering_model()
-    )
+    clustering_model, scaler = load_clustering_model()
 
     # ---------------------------------
     # Predict clusters
@@ -126,13 +122,30 @@ def analyze_logs(logs):
         )
 
     # ---------------------------------
-    # Group anomalies into incidents
+    # Build incident candidates
+    #
+    # ML anomalies remain anomalies.
+    # ERROR logs are also surfaced as
+    # incident candidates for E2E
+    # investigation.
     # ---------------------------------
 
-    incidents = (
-        group_anomalies_into_incidents(
-            analyzed_logs
-        )
+    incident_candidates = []
+
+    for log in analyzed_logs:
+
+        if (
+            log["is_anomaly"] == 1
+            or str(log.get("level", "")).upper() == "ERROR"
+        ):
+            incident_candidates.append(log)
+
+    # ---------------------------------
+    # Group incident candidates
+    # ---------------------------------
+
+    incidents = group_anomalies_into_incidents(
+        incident_candidates
     )
 
     # ---------------------------------

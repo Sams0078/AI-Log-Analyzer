@@ -38,7 +38,7 @@ def generate_response(
     try:
         with urllib.request.urlopen(
             request,
-            timeout=120,
+            timeout=300,
         ) as response:
 
             result = json.loads(

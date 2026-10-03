@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import faiss
 import numpy as np
 
 INDEX_PATH = Path("vector_db/logs.index")
