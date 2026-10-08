@@ -44,10 +44,20 @@ export function totalFormat(value) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
-export function getViewTitle(target, menuGroups) {
-  const item = menuGroups
-    .flatMap((group) => group.items)
-    .find((item) => item.key === target);
+export function getViewTitle(target) {
+  const titles = {
+    overview: "Overview",
+    account: "User Account",
+    activity: "Activity",
+    saved: "Saved Investigations",
+    bookmarks: "Bookmarks",
+    settings: "Settings",
+    health: "System Health",
+    administrator: "Administrator",
+    security: "Audit & Security",
+    documentation: "Documentation",
+    help: "Help & Feedback",
+  };
 
-  return item?.label || target;
+  return titles[target] || target;
 }

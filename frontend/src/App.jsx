@@ -1,7 +1,5 @@
 import ErrorChart from "./charts/ErrorChart";
-
 import LogLevelChart from "./charts/LogLevelChart";
-
 import ServiceChart from "./charts/ServiceChart";
 
 import Dashboard from "./pages/Dashboard";
@@ -9,19 +7,12 @@ import Dashboard from "./pages/Dashboard";
 import { useEffect, useMemo, useState } from "react";
 
 import Navbar from "./components/Navbar";
-
 import UploadBox from "./components/UploadBox";
-
 import AnomalyCard, { LevelBadge } from "./components/AnomalyCard";
-
 import IncidentRow from "./components/IncidentRow";
-
 import IncidentDrawer from "./components/IncidentDrawer";
-
 import PipelineSection from "./components/PipelineSection";
-
 import MenuOverlay from "./components/MenuOverlay";
-
 import LoginModal from "./components/LoginModal";
 import Header from "./components/Header";
 import GlobalBackground from "./components/GlobalBackground";
@@ -102,6 +93,8 @@ import {
 import api, {
   analyzeIncidentWithAI,
   getAnalysis,
+  loginAdmin,
+  getAdminSession,
 } from "./services/api";
 
 /* ========================================================= */
@@ -286,6 +279,7 @@ function App() {
 
   useEffect(() => {
     loadAnalysis();
+    restoreAdminSession();
   }, []);
 
   /* ------------------------------------------------------- */
@@ -403,7 +397,7 @@ function App() {
   function addActivity(label) {
     setActivity((items) => [
       {
-        id: Date.now(),
+        id: `${Date.now()}-${crypto.randomUUID()}`,
         label,
         timestamp: new Date().toISOString(),
       },
@@ -465,30 +459,76 @@ function App() {
   /* LOGIN */
   /* ------------------------------------------------------- */
 
-  function handleLogin(username, password) {
-    if (!username.trim() || !password.trim()) {
+async function restoreAdminSession() {
+  const token = sessionStorage.getItem("admin_token");
+
+  if (!token) {
+    return;
+  }
+
+  try {
+    await getAdminSession(token);
+    setLoggedIn(true);
+  } catch (error) {
+    console.error(
+      "Admin session restore failed:",
+      error
+    );
+
+    sessionStorage.removeItem("admin_token");
+    setLoggedIn(false);
+  }
+}
+
+async function handleLogin(username, password) {
+  if (!username.trim() || !password.trim()) {
+    return false;
+  }
+
+  try {
+    const response = await loginAdmin(
+      username.trim(),
+      password
+    );
+
+    if (!response?.token) {
       return false;
     }
 
-    /*
-     * Frontend-only login state for now.
-     *
-     * Real authentication should later be connected
-     * to FastAPI + JWT + environment credentials.
-     */
+    sessionStorage.setItem(
+      "admin_token",
+      response.token
+    );
 
     setLoggedIn(true);
     setLoginOpen(false);
 
-    addActivity("Signed in to workspace");
+    addActivity(
+      "Signed in to workspace"
+    );
 
     return true;
-  }
+  } catch (error) {
+    console.error(
+      "Admin login failed:",
+      error
+    );
 
-  function handleLogout() {
-    setLoggedIn(false);
-    addActivity("Signed out of workspace");
+    return false;
   }
+}
+
+function handleLogout() {
+  sessionStorage.removeItem(
+    "admin_token"
+  );
+
+  setLoggedIn(false);
+
+  addActivity(
+    "Signed out of workspace"
+  );
+}
 
   /* ------------------------------------------------------- */
   /* AI */
@@ -793,7 +833,7 @@ function App() {
                     Intelligent observability / 01
                   </div>
 
-                  <h1 className="max-w-5xl text-[clamp(3.5rem,6.5vw,6.5rem)] font-semibold leading-[0.86] tracking-[-0.075em]">
+                  <h1 className="hero-title max-w-5xl text-[clamp(3.5rem,6.5vw,6.5rem)] font-semibold leading-[0.86] tracking-[-0.075em]">
                     Your logs
                     <br />
                     know what

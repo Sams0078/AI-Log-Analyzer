@@ -20,7 +20,7 @@ function LoginModal({
     setError,
   ] = useState("");
 
-  function submit(
+  async function submit(
     event
   ) {
     event.preventDefault();
@@ -35,15 +35,17 @@ function LoginModal({
       return;
     }
 
+    setError("");
+
     const success =
-      onLogin(
+      await onLogin(
         username,
         password
       );
 
     if (!success) {
       setError(
-        "Unable to sign in."
+        "Invalid username or password."
       );
     }
   }
@@ -154,10 +156,9 @@ function LoginModal({
         </form>
 
         <div className="mt-5 text-center text-[9px] leading-5 text-white/15">
-          UI authentication
-          state only. Connect
-          FastAPI + JWT before
-          production use.
+          Secure workspace
+          authentication via
+          FastAPI + JWT.
         </div>
       </div>
     </div>
