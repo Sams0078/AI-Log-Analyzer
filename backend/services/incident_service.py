@@ -16,11 +16,8 @@ def group_anomalies_into_incidents(
         return []
 
     # Keep only anomalies
-    anomalies = [
-        log
-        for log in logs
-        if log.get("is_anomaly") == 1
-    ]
+    anomalies = list(logs)
+    
 
     if not anomalies:
         return []
