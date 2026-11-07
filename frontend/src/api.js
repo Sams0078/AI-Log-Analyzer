@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://127.0.0.1:8001";
+// Direct URL ki jagah Vite proxy ke sath compatible base URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -22,11 +23,26 @@ export async function getLogs() {
   return response.data;
 }
 
-export async function uploadLogs(file) {
-  const form = new FormData();
-  form.append("file", file);
-  const response = await api.post("/logs/upload", form);
-  return response.data;
+// Support both File Object & Raw Text String Ingestion
+export async function uploadLogs(fileOrContent) {
+  if (typeof fileOrContent === "string") {
+    // Handling raw text log ingestion
+    const response = await api.post("/logs/ingest", {
+      raw_logs: fileOrContent,
+    });
+    return response.data;
+  } else {
+    // Handling file upload
+    const formData = new FormData();
+    formData.append("file", fileOrContent);
+
+    const response = await api.post("/logs/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  }
 }
 
 export async function loginAdmin(username, password) {
@@ -49,7 +65,11 @@ export async function getSystems(token) {
 }
 
 export async function registerSystem(token, payload) {
-  const response = await api.post("/admin/systems", payload, adminHeaders(token));
+  const response = await api.post(
+    "/admin/systems",
+    payload,
+    adminHeaders(token)
+  );
   return response.data;
 }
 
